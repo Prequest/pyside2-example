@@ -1,5 +1,3 @@
-
-
 from PySide2.QtCore import QPropertyAnimation, QTimer
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
@@ -94,7 +92,6 @@ class MainPanel(QMainWindow, Ui_MainPanel):
     def button_click(self):
         btn = self.sender()
         btn_name = btn.objectName()
-
         if btn_name == "pb_home":
             self.pages_widget.setCurrentWidget(self.page_home)
         if btn_name == "pb_form":
@@ -103,30 +100,29 @@ class MainPanel(QMainWindow, Ui_MainPanel):
             self.pages_widget.setCurrentWidget(self.page_settings)
 
 
-class WelcomePanel(QMainWindow):
-    def __init__(self):
-        QMainWindow.__init__(self)
-        self.ui = Ui_UserWindow()
-        self.ui.setupUi(self)
+class WelcomePanel(QMainWindow, Ui_UserWindow):
+    def __init__(self, *args, **kwargs):
+        super(WelcomePanel, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+        #Definitions#
         self.mp = MainPanel()
-        self.progress()
+        self.progressBar.setValue(0)
+
+        #Attributes#
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-
         self.shadow = QGraphicsDropShadowEffect(self)
         self.shadow.setBlurRadius(30)
         self.shadow.setXOffset(0)
         self.shadow.setYOffset(0)
         self.shadow.setColor(QColor(0, 0, 0, 200))
-        self.ui.mainFrame.setGraphicsEffect(self.shadow)
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.progress)
-        self.timer.start(1)
+        self.mainFrame.setGraphicsEffect(self.shadow)
+        # Click Events#
+        self.pb_login.clicked.connect(self.login_to)
 
     def progress(self):
         global COUNTER
-        self.ui.progressBar.setValue(COUNTER)
+        self.progressBar.setValue(COUNTER)
 
         if COUNTER >= 100:
             self.timer.stop()
@@ -134,6 +130,17 @@ class WelcomePanel(QMainWindow):
             self.close()
 
         COUNTER += 1
+
+    def login_to(self):
+        if self.le_username.text() == "admin" and self.le_password.text() == "1234":
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.progress)
+            self.timer.start(1)
+            self.progress()
+        else:
+            self.qm = QMessageBox()
+            self.qm.critical(
+                self, "Attent", "Invalid Username or Password", self.qm.Ok)
 
 
 if __name__ == "__main__":
